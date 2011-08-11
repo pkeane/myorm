@@ -1,2 +1,16 @@
 this is a simple, flexible ORM for use w/ MySQL designed to be used w/ legacy databases
 
+example:
+
+$conf['host'] = 'localhost';
+$conf['name'] = 'widgetdb';
+$conf['user'] = 'widget_user';
+$conf['pass'] = 'd6f9e4r+:p';
+
+$db = new MyORM_DB($conf);
+$user = new MyORM_DBO($db,'users');
+$user->name = 'pkeane';
+$user->findOne();
+
+$user->name = 'peter keane';
+$user->update();
