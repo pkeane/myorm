@@ -3,7 +3,7 @@
 class MyORM_DBO implements IteratorAggregate
 {
 		private $fields = array(); 
-		private $table;
+		protected static $table = 'base';
 		protected $limit;
 		protected $order_by;
 		protected $qualifiers = array();
@@ -14,37 +14,26 @@ class MyORM_DBO implements IteratorAggregate
 		public $primary_key = array();
 		public $auto_increment;
 
-		function __construct($db, $table )
+		function __construct($db)
 		{
 				$this->db = $db;
-				$this->table = $table;
-				foreach( $db->listColumns($table) as $key ) {
+				foreach( $db->listColumns(static::$table) as $key ) {
 						$this->fields[ $key ] = null;
 				}
-				foreach ($db->getPrimaryKey($table) as $pk) {
+				foreach ($db->getPrimaryKey(static::$table) as $pk) {
 						//allows composite pk
 						$this->primary_key[] = $pk;
 				}
-				$this->auto_increment = $db->getAutoIncrement($table);
+				$this->auto_increment = $db->getAutoIncrement(static::$table);
 		}
 
 		public function setDefaults()
 		{
-				$defaults = $this->db->getDefaults($this->table);
-				foreach( $this->db->listColumns($this->table) as $key ) {
+				$defaults = $this->db->getDefaults(static::$table);
+				foreach( $this->db->listColumns(static::$table) as $key ) {
 						if (null == $this->fields[ $key ]) {
 								$this->fields[ $key ] = $defaults[$key];
 						}
-				}
-		}
-
-		public function getTable($include_prefix = true)
-		{
-				if ($include_prefix) {
-						return $this->table;
-				} else {
-						$prefix = $this->db->table_prefix;
-						return substr_replace($this->table,'',0,strlen($prefix));
 				}
 		}
 
@@ -134,8 +123,8 @@ class MyORM_DBO implements IteratorAggregate
 				}
 				$field_set = join( ", ", $fields );
 				$insert = join( ", ", $inserts );
-				//$this->table string is NOT tainted
-				$sql = "INSERT INTO ".$this->table. 
+				//static::$table string is NOT tainted
+				$sql = "INSERT INTO ".static::$table. 
 						" ( $field_set ) VALUES ( $insert )";
 				$sth = $dbh->prepare( $sql );
 				if (! $sth) {
@@ -193,13 +182,12 @@ class MyORM_DBO implements IteratorAggregate
 		function __toString()
 		{
 				$members = '';
-				$table = $this->table;
 				$ac = $this->auto_increment;
 
 				foreach ($this->fields as $key => $value) {
 						$members .= "$key: $value\n";
 				}
-				$out = "--$table ($this->ac)--\n$members\n";
+				$out = static::$table." ($this->ac)--\n$members\n";
 				return $out;
 		}
 
@@ -234,9 +222,9 @@ class MyORM_DBO implements IteratorAggregate
 				}
 				$where = join( " AND ", $sets );
 				if ($where) {
-						$sql = "SELECT * FROM ".$this->table. " WHERE ".$where;
+						$sql = "SELECT * FROM ".static::$table. " WHERE ".$where;
 				} else {
-						$sql = "SELECT * FROM ".$this->table;
+						$sql = "SELECT * FROM ".static::$table;
 				}
 				if (isset($this->order_by)) {
 						$sql .= " ORDER BY $this->order_by";
@@ -289,9 +277,9 @@ class MyORM_DBO implements IteratorAggregate
 				}
 				$where = join( " AND ", $sets );
 				if ($where) {
-						$sql = "SELECT count(*) FROM ".$this->table. " WHERE ".$where;
+						$sql = "SELECT count(*) FROM ".static::$table. " WHERE ".$where;
 				} else {
-						$sql = "SELECT count(*) FROM ".$this->table;
+						$sql = "SELECT count(*) FROM ".static::$table;
 				}
 				$sth = $dbh->prepare( $sql );
 				if (!$sth) {
@@ -335,7 +323,7 @@ class MyORM_DBO implements IteratorAggregate
 						$values[] = $this->$pk;
 				}
 				$dbh = $this->db->getDbh();
-				$sql = 'DELETE FROM '.$this->table.' WHERE '.join(' AND ',$where_set);
+				$sql = 'DELETE FROM '.static::$table.' WHERE '.join(' AND ',$where_set);
 				$sth = $dbh->prepare($sql);
 				return $sth->execute($values);
 		}
