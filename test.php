@@ -27,13 +27,32 @@ $conf = array(
 );
 $db = new MyORM_DB($conf);
 
+
+#print_r($note->getFieldNames());
+
 $note = new Note($db);
-
-print_r($note->getFieldNames());
-
 $note->text = 'my first note';
 $note->created = date(DATE_ATOM);
 $note->created_by = 'peter';
 $note->insert();
 
 
+$note = new Note($db);
+$note->text = 'my second note';
+$note->created = date(DATE_ATOM);
+$note->created_by = 'peter';
+$note->insert();
+
+
+$note = new Note($db);
+$note->text = 'my third note';
+$note->created = date(DATE_ATOM);
+$note->created_by = 'peter';
+$note->insert();
+
+
+$notes = new Note($db);
+foreach ($notes->findAll() as $n)  {
+    print $n->text."\n";
+    $n->delete();
+}
