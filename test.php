@@ -21,12 +21,14 @@ class Note extends MyORM_DBO {
 
 $conf = array(
     'host' => 'localhost',
-    'name' => 'pkeane',
-    'user' => 'username',
-    'pass' => 'password',
+    'name' => 'x',
+    'user' => 'x',
+    'pass' => 'x',
 );
 $db = new MyORM_DB($conf);
 
+$sth = $db->getDbh()->prepare($sql);
+$sth->execute();
 
 #print_r($note->getFieldNames());
 
